@@ -1,0 +1,39 @@
+
+---
+
+  - name: PERFORM COMPLIANCE CHECKS
+    hosts: ios
+    connection: local
+    gather_facts: no
+    vars_files:
+    - vars.yml
+     
+    tasks: 
+
+
+      - name: GATHER SHOW VERSION
+        ios_command: 
+          commands: 
+            - show version
+          username: "{{username}}"
+          password: "{{password}}"
+          host: "{{ inventory_hostname }}"
+        register: output
+ 
+      - name: DUMP OUTPUT TO TERMINAL
+        debug: 
+          var: output
+
+      - name: VERIFY OS AND CONFIG REGISTER
+        assert:
+          that:
+            - "'Version 16.09.01' in output['stdout'][0]"
+            - "'Configuration register is 0x2102' in output['stdout'][0]"
+
+      - name: Ensure SNMP EXISTS
+        ios_config:
+          commands:
+            - snmp-server community Change-Me  ro
+          username: "{{username}}"
+          password: "{{password}}"
+          host: "{{ inventory_hostname }}"
